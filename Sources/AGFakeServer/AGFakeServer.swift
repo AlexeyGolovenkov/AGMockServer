@@ -1,6 +1,5 @@
-public struct AGFakeServer {
-    public private(set) var text = "Hello, World!"
-
-    public init() {
-    }
+public class AGFakeServer {
+    public static var shared = AGFakeServer()
+    
+    public var ignoredParameters = [String]()
 }
