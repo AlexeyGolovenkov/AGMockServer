@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  AGRequestLog.swift
 //  
 //
 //  Created by Alexey Golovenkov on 03.12.2021.

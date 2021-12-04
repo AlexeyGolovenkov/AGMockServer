@@ -25,7 +25,8 @@ extension URL {
 
 infix operator ~ : ComparisonPrecedence
 func ~(left: URL, right: URL) -> Bool {
-    return left.withoutParameters(AGFakeServer.shared.ignoredParameters) == right.withoutParameters(AGFakeServer.shared.ignoredParameters)
+    let ignoredParameters = AGFakeServer.shared.ignoredParameters
+    return left.withoutParameters(ignoredParameters) == right.withoutParameters(ignoredParameters)
 }
 
 fileprivate extension Array where Element == URLQueryItem {
