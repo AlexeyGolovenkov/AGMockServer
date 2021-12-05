@@ -12,7 +12,7 @@ public class AGFakeServer {
     
     public var ignoredParameters = [String]()
     
-    var autoHandling = false {
+    var autoHandling = true {
         didSet {
             FakeURLProtocol.autoHandling = autoHandling
             if autoHandling {
@@ -26,6 +26,7 @@ public class AGFakeServer {
         configuration.protocolClasses = [FakeURLProtocol.self]
         return configuration
     }()
+    
     private var session: URLSession?
            
     func register(for session: URLSession) -> URLSession {

@@ -32,7 +32,7 @@ public protocol AGFakeRESTRequestHandler: AnyObject {
 
 // MARK: - Default implementation
 
-extension AGFakeRESTRequestHandler {
+public extension AGFakeRESTRequestHandler {
     
     func response(for url: URL, from data: Data?) -> (response: HTTPURLResponse, data: Data) {
         let response = HTTPURLResponse(url: url,

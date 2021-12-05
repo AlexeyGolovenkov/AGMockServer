@@ -9,7 +9,7 @@ import Foundation
 
 final class FakeURLProtocol: URLProtocol {
     var handler: AGFakeRESTRequestHandler!
-    static var autoHandling = false
+    static var autoHandling = true
     
     override class func canInit(with request: URLRequest) -> Bool {
         guard let url = request.url else { return false }
