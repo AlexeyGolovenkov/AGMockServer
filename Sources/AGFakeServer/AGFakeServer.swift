@@ -8,6 +8,18 @@
 import Foundation
 
 public class AGFakeServer {
+    
+    enum AGFakeError: Error {
+        case autohandling(String)
+        case noHandler(String)
+    }
+    
+    struct CustomResponse {
+        var data: Data
+        var statusCode: Int
+        var headers: [String:String]?
+    }
+    
     public static var shared = AGFakeServer()
     
     public var ignoredParameters = [String]()
@@ -21,25 +33,15 @@ public class AGFakeServer {
         }
     }
     
-    private let config: URLSessionConfiguration = {
-        let configuration = URLSessionConfiguration.ephemeral
-        configuration.protocolClasses = [FakeURLProtocol.self]
-        return configuration
-    }()
-    
     private var session: URLSession?
            
-    func register(for session: URLSession) -> URLSession {
+    func hackedSession(for session: URLSession) -> URLSession {
         let configuration = session.configuration
         var protocols = configuration.protocolClasses ?? []
         protocols.insert(FakeURLProtocol.self, at: 0)
         configuration.protocolClasses = protocols
         self.session = session
         return URLSession(configuration: configuration)
-    }
-    
-    func unregister() -> URLSession? {
-        return self.session
     }
     
     func finishResponse(for url: URL, with data: Data?) {
@@ -52,11 +54,25 @@ public class AGFakeServer {
         }
     }
     
-    // MARK: - Private methods
-    
-    private func setupURLSession() {
-        session = URLSession(configuration: config, delegate: nil, delegateQueue: nil)
+    func send(_ userResponse: CustomResponse, for url: URL) throws {
+        guard autoHandling else {
+            throw AGFakeError.autohandling("Set autohandling to false when use send method")
+        }
+        
+        guard let urlProtocol = FakeHandlersStorage.shared.handler(for: url) else {
+            throw AGFakeError.noHandler("No handlers found for \(url.absoluteString)")
+        }
+        FakeHandlersStorage.shared.handlers.remove(urlProtocol)
+        DispatchQueue.global(qos: .background).asyncAfter(deadline: .now() + Constants.timeout) {
+            let response = HTTPURLResponse(url: url,
+                                           statusCode: userResponse.statusCode,
+                                           httpVersion: Constants.httpVersion,
+                                           headerFields: userResponse.headers) ?? HTTPURLResponse()
+            urlProtocol.send(response, data: userResponse.data)
+        }
     }
+    
+    // MARK: - Private methods
         
     private func sendAllResponses() {
         let handlers = FakeHandlersStorage.shared.handlers.allObjects

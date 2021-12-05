@@ -3,16 +3,17 @@ import XCTest
 
 @testable import AGFakeServer
 
+var server = AGFakeServer()
+var session: URLSession!
+
 final class AGFakeServerTests: XCTestCase {
         
-    var server = AGFakeServer()
-    var session: URLSession!
-    
     override func setUp() {
         super.setUp()
         if session == nil {
-            session = server.register(for: URLSession.shared)
+            session = server.hackedSession(for: URLSession.shared)
         }
+        AGRequestLog.main.clear()
     }
     
     override func tearDown() {
@@ -46,6 +47,11 @@ final class AGFakeServerTests: XCTestCase {
             expectation.fulfill()
         }.resume()
         wait(for: [expectation], timeout: 5)
+        let log = AGRequestLog.main.log()
+        XCTAssertTrue(log.count == 1, "Wrong number of log messages: \(log.count)")
+        XCTAssertTrue(log.first == url, "Wrong log: \(log)")
+        
+        print("\(FakeHandlersStorage.shared.handlers.count)")
     }
 }
 
