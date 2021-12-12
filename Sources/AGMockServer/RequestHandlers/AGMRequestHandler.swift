@@ -8,7 +8,7 @@
 import Foundation
 
 /// Handler for hacked HTTP request
-public protocol AGFakeRESTRequestHandler: AnyObject {
+public protocol AGMRequestHandler: AnyObject {
     
     /// Format of URL path that can be handled by the handler. Supports regex.
     var urlFormat: String { get }
@@ -32,7 +32,7 @@ public protocol AGFakeRESTRequestHandler: AnyObject {
 
 // MARK: - Default implementation
 
-public extension AGFakeRESTRequestHandler {
+public extension AGMRequestHandler {
     
     func response(for url: URL, from data: Data?) -> (response: HTTPURLResponse, data: Data) {
         let response = HTTPURLResponse(url: url,

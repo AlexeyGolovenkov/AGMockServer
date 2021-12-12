@@ -1,9 +1,9 @@
 import Foundation
 import XCTest
 
-@testable import AGFakeServer
+@testable import AGMockServer
 
-var server = AGFakeServer()
+var server = AGMockServer()
 var session: URLSession!
 
 final class AGFakeServerTests: XCTestCase {
@@ -13,20 +13,20 @@ final class AGFakeServerTests: XCTestCase {
         if session == nil {
             session = server.hackedSession(for: URLSession.shared)
         }
-        AGRequestLog.main.clear()
+        AGMRequestLog.main.clear()
     }
     
     override func tearDown() {
-        FakeRESTRequestHandlersFactory.clearAll()
+        AGMRequestHandlersFactory.clearAll()
         super.tearDown()
     }
     
     func testRegistration() throws {
-        XCTAssertTrue(session.configuration.protocolClasses?.first == FakeURLProtocol.self, "Session not hacked")
+        XCTAssertTrue(session.configuration.protocolClasses?.first == AGMURLProtocol.self, "Session not hacked")
     }
     
     func testEcho() {
-        FakeRESTRequestHandlersFactory.add(handler: EchoHandler())
+        AGMRequestHandlersFactory.add(handler: EchoHandler())
         
         let url = URL(string: "https://localhost/echo?param1=value1&param2=value2")!
         let expectation = self.expectation(description: "Echo expectation")
@@ -47,11 +47,11 @@ final class AGFakeServerTests: XCTestCase {
             expectation.fulfill()
         }.resume()
         wait(for: [expectation], timeout: 5)
-        let log = AGRequestLog.main.log()
+        let log = AGMRequestLog.main.log()
         XCTAssertTrue(log.count == 1, "Wrong number of log messages: \(log.count)")
         XCTAssertTrue(log.first == url, "Wrong log: \(log)")
         
-        print("\(FakeHandlersStorage.shared.handlers.count)")
+        print("\(AGMHandlersStorage.shared.handlers.count)")
     }
 }
 

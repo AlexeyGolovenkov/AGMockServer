@@ -7,20 +7,20 @@
 
 import Foundation
 
-final class FakeURLProtocol: URLProtocol {
-    var handler: AGFakeRESTRequestHandler!
+final class AGMURLProtocol: URLProtocol {
+    var handler: AGMRequestHandler!
     static var autoHandling = true
     
     override class func canInit(with request: URLRequest) -> Bool {
         guard let url = request.url else { return false }
-        return FakeRESTRequestHandlersFactory.handler(for: url) != nil
+        return AGMRequestHandlersFactory.handler(for: url) != nil
     }
     
     override class func canInit(with task: URLSessionTask) -> Bool {
         guard let url = task.originalRequest?.url else { return false }
-        let result = FakeRESTRequestHandlersFactory.handler(for: url) != nil
+        let result = AGMRequestHandlersFactory.handler(for: url) != nil
         if result {
-            AGRequestLog.main.add(url)
+            AGMRequestLog.main.add(url)
         }
         return result
     }
@@ -30,14 +30,14 @@ final class FakeURLProtocol: URLProtocol {
             client?.urlProtocolDidFinishLoading(self)
             return
         }
-        handler = FakeRESTRequestHandlersFactory.handler(for: url)
-        if FakeURLProtocol.autoHandling {
+        handler = AGMRequestHandlersFactory.handler(for: url)
+        if AGMURLProtocol.autoHandling {
             DispatchQueue.global(qos: .background).asyncAfter(deadline: .now() + 0.2) {
                 let answer = self.handler.response(for: url, from: nil)
                 self.send(answer.response, data: answer.data)
             }
         } else {
-            FakeHandlersStorage.shared.add(self)
+            AGMHandlersStorage.shared.add(self)
         }
     }
         

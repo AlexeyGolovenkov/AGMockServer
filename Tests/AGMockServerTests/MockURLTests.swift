@@ -6,7 +6,7 @@
 //
 
 import XCTest
-@testable import AGFakeServer
+@testable import AGMockServer
 
 class FakeURLTests: XCTestCase {
     
@@ -34,17 +34,17 @@ class FakeURLTests: XCTestCase {
         
         XCTAssertFalse(url ~ anotherUrl, "Parameters must not be equal")
         
-        AGFakeServer.shared.ignoredParameters = ["param1", "param2"]
+        AGMockServer.shared.ignoredParameters = ["param1", "param2"]
         XCTAssertTrue(url ~ anotherUrl, "Parameters must be equal")
         
-        AGFakeServer.shared.ignoredParameters = ["param2"]
+        AGMockServer.shared.ignoredParameters = ["param2"]
         XCTAssertTrue(url ~ urlWithFirstParam, "Parameters must be equal")
         XCTAssertFalse(url ~ urlWithSecondParam, "Parameters must be equal")
         
-        AGFakeServer.shared.ignoredParameters = ["param1"]
+        AGMockServer.shared.ignoredParameters = ["param1"]
         XCTAssertFalse(url ~ urlWithFirstParam, "Parameters must not be equal")
         XCTAssertTrue(url ~ urlWithSecondParam, "Parameters must be equal")
         
-        AGFakeServer.shared.ignoredParameters = []
+        AGMockServer.shared.ignoredParameters = []
     }
 }

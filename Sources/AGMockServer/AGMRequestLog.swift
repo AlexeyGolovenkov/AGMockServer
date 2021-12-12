@@ -7,9 +7,9 @@
 
 import Foundation
 
-public class AGRequestLog {
+public class AGMRequestLog {
     
-    static var main = AGRequestLog()
+    static var main = AGMRequestLog()
     
     private var storage = [URL]()
     

@@ -7,15 +7,15 @@
 
 import Foundation
 
-class FakeHandlersStorage {
-    static var shared = FakeHandlersStorage()
-    var handlers = NSHashTable<FakeURLProtocol>(options: .weakMemory)
+class AGMHandlersStorage {
+    static var shared = AGMHandlersStorage()
+    var handlers = NSHashTable<AGMURLProtocol>(options: .weakMemory)
     
-    func add(_ handler: FakeURLProtocol) {
+    func add(_ handler: AGMURLProtocol) {
         handlers.add(handler)
     }
     
-    func handler(for url: URL) -> FakeURLProtocol? {
+    func handler(for url: URL) -> AGMURLProtocol? {
         return handlers.allObjects.first {
             guard let existingURL = $0.request.url else {
                 return false

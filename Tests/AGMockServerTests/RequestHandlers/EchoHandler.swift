@@ -6,9 +6,9 @@
 //
 
 import Foundation
-import AGFakeServer
+import AGMockServer
 
-class EchoHandler: AGFakeRESTRequestHandler {
+class EchoHandler: AGMRequestHandler {
     
     var urlFormat = "echo"
     

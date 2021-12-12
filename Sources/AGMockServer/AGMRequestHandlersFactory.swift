@@ -7,10 +7,10 @@
 
 import Foundation
 
-final class FakeRESTRequestHandlersFactory {
-    private static var handlers = [AGFakeRESTRequestHandler]()
+final class AGMRequestHandlersFactory {
+    private static var handlers = [AGMRequestHandler]()
     
-    static func handler(for url: URL) -> AGFakeRESTRequestHandler? {
+    static func handler(for url: URL) -> AGMRequestHandler? {
         for handler in handlers {
             if handler.canHandle(url) {
                 return handler
@@ -19,7 +19,7 @@ final class FakeRESTRequestHandlersFactory {
         return nil
     }
     
-    static func add(handler requestHandler: AGFakeRESTRequestHandler) {
+    static func add(handler requestHandler: AGMRequestHandler) {
         handlers.append(requestHandler)
     }
     
@@ -27,7 +27,7 @@ final class FakeRESTRequestHandlersFactory {
         handlers.removeAll()
     }
     
-    static func remove(handler requestHandler: AGFakeRESTRequestHandler) {
+    static func remove(handler requestHandler: AGMRequestHandler) {
         guard let index = handlers.firstIndex(where: {$0 === requestHandler}) else {
             return
         }
