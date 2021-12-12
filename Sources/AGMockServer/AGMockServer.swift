@@ -18,11 +18,13 @@ public class AGMockServer {
         var data: Data = Data()
         var statusCode: Int = 200
         var headers: [String:String]? = nil
-        var stringValue: String {
-            get { "" }
-            set {
-                data = newValue.data(using: .utf8) ?? Data()
-            }
+        
+        mutating func setString(_ string: String) {
+            data = string.data(using: .utf8) ?? Data()
+        }
+        
+        mutating func setValue<T>(_ value: T) where T : Encodable {
+            data = (try? JSONEncoder().encode(value)) ?? Data()
         }
     }
     
@@ -48,16 +50,6 @@ public class AGMockServer {
         configuration.protocolClasses = protocols
         self.session = session
         return URLSession(configuration: configuration)
-    }
-    
-    func finishResponse(for url: URL, with data: Data?) {
-        DispatchQueue.global(qos: .background).asyncAfter(deadline: .now() + Constants.timeout) {
-            guard let urlProtocol = AGMHandlersStorage.shared.handler(for: url) else {
-                return
-            }
-            let answer = urlProtocol.handler.response(for: url, from: data)
-            urlProtocol.send(answer.response, data: answer.data)
-        }
     }
     
     func send(_ userResponse: CustomResponse, for url: URL) throws {

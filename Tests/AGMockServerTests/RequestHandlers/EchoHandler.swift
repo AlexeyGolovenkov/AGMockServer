@@ -8,8 +8,11 @@
 import Foundation
 import AGMockServer
 
+
+/// Sample handler
 class EchoHandler: AGMRequestHandler {
     
+    // This handler will be called for every URL containing 'echo'
     var urlFormat = "echo"
     
     func defaultData(for url: URL) -> Data {
