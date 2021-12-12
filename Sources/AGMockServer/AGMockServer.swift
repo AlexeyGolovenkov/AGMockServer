@@ -15,9 +15,15 @@ public class AGMockServer {
     }
     
     struct CustomResponse {
-        var data: Data
-        var statusCode: Int
-        var headers: [String:String]?
+        var data: Data = Data()
+        var statusCode: Int = 200
+        var headers: [String:String]? = nil
+        var stringValue: String {
+            get { "" }
+            set {
+                data = newValue.data(using: .utf8) ?? Data()
+            }
+        }
     }
     
     public static var shared = AGMockServer()
@@ -55,7 +61,7 @@ public class AGMockServer {
     }
     
     func send(_ userResponse: CustomResponse, for url: URL) throws {
-        guard autoHandling else {
+        guard !autoHandling else {
             throw AGMockError.autohandling("Set autohandling to false when use send method")
         }
         
