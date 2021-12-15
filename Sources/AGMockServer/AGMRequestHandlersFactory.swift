@@ -8,7 +8,7 @@
 import Foundation
 
 final class AGMRequestHandlersFactory {
-    private static var handlers = [AGMRequestHandler]()
+    internal static var handlers = [AGMRequestHandler]()
     
     static func handler(for url: URL) -> AGMRequestHandler? {
         for handler in handlers {

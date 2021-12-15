@@ -8,7 +8,6 @@
 import Foundation
 import AGMockServer
 
-
 /// Sample handler
 class EchoHandler: AGMRequestHandler {
     
