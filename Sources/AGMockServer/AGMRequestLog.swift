@@ -9,7 +9,7 @@ import Foundation
 
 public class AGMRequestLog {
     
-    static var main = AGMRequestLog()
+    public static var main = AGMRequestLog()
     
     private var storage = [URL]()
     
@@ -17,11 +17,11 @@ public class AGMRequestLog {
         storage.append(url)
     }
     
-    func clear() {
+    public func clear() {
         storage.removeAll()
     }
     
-    func log() -> [URL] {
+    public func log() -> [URL] {
         return storage
     }
 }

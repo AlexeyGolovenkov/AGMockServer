@@ -14,7 +14,7 @@ public class AGMockServer {
         case noHandler(String)
     }
     
-    struct CustomResponse {
+    public struct CustomResponse {
         var data: Data = Data()
         var statusCode: Int = 200
         var headers: [String:String]? = nil
@@ -32,7 +32,7 @@ public class AGMockServer {
     
     public var ignoredParameters = [String]()
     
-    var autoHandling = true {
+    public var autoHandling = true {
         didSet {
             AGMURLProtocol.autoHandling = autoHandling
             if autoHandling {
@@ -43,7 +43,7 @@ public class AGMockServer {
     
     private var session: URLSession?
            
-    func hackedSession(for session: URLSession) -> URLSession {
+    public func hackedSession(for session: URLSession) -> URLSession {
         let configuration = session.configuration
         var protocols = configuration.protocolClasses ?? []
         protocols.insert(AGMURLProtocol.self, at: 0)
@@ -52,7 +52,7 @@ public class AGMockServer {
         return URLSession(configuration: configuration)
     }
     
-    func send(_ userResponse: CustomResponse, for url: URL) throws {
+    public func send(_ userResponse: CustomResponse, for url: URL) throws {
         guard !autoHandling else {
             throw AGMockError.autohandling("Set autohandling to false when use send method")
         }
