@@ -70,6 +70,18 @@ public class AGMockServer {
         }
     }
     
+    public func registerHandler(_ handler: AGMRequestHandler) {
+        AGMRequestHandlersFactory.add(handler: handler)
+    }
+    
+    public func unregisterHandler(_ handler: AGMRequestHandler) {
+        AGMRequestHandlersFactory.remove(handler: handler)
+    }
+    
+    public func unregisterAllHandlers() {
+        AGMRequestHandlersFactory.clearAll()
+    }
+    
     // MARK: - Private methods
         
     private func sendAllResponses() {

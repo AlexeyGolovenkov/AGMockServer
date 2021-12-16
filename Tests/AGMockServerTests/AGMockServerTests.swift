@@ -17,7 +17,7 @@ final class AGFakeServerTests: XCTestCase {
     }
     
     override func tearDown() {
-        AGMRequestHandlersFactory.clearAll()
+        server.unregisterAllHandlers()
         super.tearDown()
     }
     
@@ -28,7 +28,7 @@ final class AGFakeServerTests: XCTestCase {
     /// Tests echo handler
     /// Sends a request to echo-REST and expects the parameters sent in the response, wrapped in a JSON object
     func testEcho() {
-        AGMRequestHandlersFactory.add(handler: EchoHandler())
+        server.registerHandler(EchoHandler())
         
         let url = URL(string: "https://localhost/echo?param1=value1&param2=value2")!
         let expectation = self.expectation(description: "Echo expectation")
@@ -61,7 +61,7 @@ final class AGFakeServerTests: XCTestCase {
         defer {
             server.autoHandling = true // Set autohandling back to true to not break other tests
         }
-        AGMRequestHandlersFactory.add(handler: EchoHandler())
+        server.registerHandler(EchoHandler())
         server.autoHandling = false // Set autohandling to false to alow test to send it's own response
         
         let url = URL(string: "https://localhost/echo?param1=value1&param2=value2")!
