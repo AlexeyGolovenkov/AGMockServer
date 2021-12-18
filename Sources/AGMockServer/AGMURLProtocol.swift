@@ -32,7 +32,7 @@ final class AGMURLProtocol: URLProtocol {
         }
         handler = AGMRequestHandlersFactory.handler(for: url)
         if AGMURLProtocol.autoHandling {
-            DispatchQueue.global(qos: .background).asyncAfter(deadline: .now() + 0.2) {
+            DispatchQueue.global(qos: .background).async {
                 let answer = self.handler.response(for: url, from: nil)
                 self.send(answer.response, data: answer.data)
             }

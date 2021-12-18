@@ -6,7 +6,7 @@ import XCTest
 var server = AGMockServer()
 var session: URLSession!
 
-final class AGFakeServerTests: XCTestCase {
+final class AGMockServerTests: XCTestCase {
     
     var waitingUrls = [URL: XCTestExpectation]()
     
@@ -101,9 +101,9 @@ final class AGFakeServerTests: XCTestCase {
         XCTAssertTrue(log.count == 1, "Wrong number of log messages: \(log.count)")
         XCTAssertTrue(log.first == url, "Wrong log: \(log)")
     }
-//}
-//
-//extension AGMockServerTests {
+}
+
+extension AGMockServerTests {
      func notificationHandler (notification: NSNotification) {
         guard let url = notification.userInfo?["url"] as? URL else {
             return
