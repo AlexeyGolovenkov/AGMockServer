@@ -13,6 +13,7 @@ class AGMHandlersStorage {
     
     func add(_ handler: AGMURLProtocol) {
         handlers.add(handler)
+        sendNotification(about: handler)
     }
     
     func handler(for url: URL) -> AGMURLProtocol? {
@@ -22,5 +23,9 @@ class AGMHandlersStorage {
             }
             return existingURL ~ url
         }
+    }
+    
+    private func sendNotification(about handler: AGMURLProtocol) {
+        NotificationCenter.default.post(name: AGMockServer.handlerReadyNotification, object: nil, userInfo: ["url" : handler.request.url as Any])
     }
 }

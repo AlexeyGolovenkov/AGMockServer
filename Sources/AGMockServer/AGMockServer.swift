@@ -9,6 +9,8 @@ import Foundation
 
 public class AGMockServer {
     
+    public static let handlerReadyNotification = Notification.Name("AGMHandlerReady")
+    
     enum AGMockError: Error {
         case autohandling(String)
         case noHandler(String)
@@ -61,7 +63,7 @@ public class AGMockServer {
             throw AGMockError.noHandler("No handlers found for \(url.absoluteString)")
         }
         AGMHandlersStorage.shared.handlers.remove(urlProtocol)
-        DispatchQueue.global(qos: .background).asyncAfter(deadline: .now() + Constants.timeout) {
+        DispatchQueue.global(qos: .background).async() {
             let response = HTTPURLResponse(url: url,
                                            statusCode: userResponse.statusCode,
                                            httpVersion: Constants.httpVersion,
@@ -70,14 +72,19 @@ public class AGMockServer {
         }
     }
     
+    /// Registers a new handler
+    /// - Parameter handler: New handler to be added to handlers list
     public func registerHandler(_ handler: AGMRequestHandler) {
         AGMRequestHandlersFactory.add(handler: handler)
     }
     
+    /// Removes handler from handlers list
+    /// - Parameter handler: Handler to be removed
     public func unregisterHandler(_ handler: AGMRequestHandler) {
         AGMRequestHandlersFactory.remove(handler: handler)
     }
     
+    /// Removes all handlers
     public func unregisterAllHandlers() {
         AGMRequestHandlersFactory.clearAll()
     }
@@ -87,7 +94,7 @@ public class AGMockServer {
     private func sendAllResponses() {
         let handlers = AGMHandlersStorage.shared.handlers.allObjects
         AGMHandlersStorage.shared.handlers.removeAllObjects()
-        DispatchQueue.global(qos: .background).asyncAfter(deadline: .now() + Constants.timeout) {
+        DispatchQueue.global(qos: .background).async() {
             for urlProtocol in handlers {
                 guard let url = urlProtocol.request.url else {
                     continue
@@ -102,5 +109,4 @@ public class AGMockServer {
 fileprivate enum Constants {
     static let defaultStatus = 200
     static let httpVersion = "1.0"
-    static let timeout: TimeInterval = 0.200
 }

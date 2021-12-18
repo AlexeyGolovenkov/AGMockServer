@@ -7,17 +7,21 @@ var server = AGMockServer()
 var session: URLSession!
 
 final class AGFakeServerTests: XCTestCase {
-        
+    
+    var waitingUrls = [URL: XCTestExpectation]()
+    
     override func setUp() {
         super.setUp()
         if session == nil {
             session = server.hackedSession(for: URLSession.shared)
         }
         AGMRequestLog.main.clear()
+        NotificationCenter.default.addObserver(self, selector: #selector(notificationHandler), name: AGMockServer.handlerReadyNotification, object: nil)
     }
     
     override func tearDown() {
         server.unregisterAllHandlers()
+        NotificationCenter.default.removeObserver(self, name: AGMockServer.handlerReadyNotification, object: nil)
         super.tearDown()
     }
     
@@ -66,6 +70,9 @@ final class AGFakeServerTests: XCTestCase {
         
         let url = URL(string: "https://localhost/echo?param1=value1&param2=value2")!
         let expectation = self.expectation(description: "Custom response expectation")
+        let serverReadyExpectation = self.expectation(description: "Server handler ready")
+        waitingUrls[url] = serverReadyExpectation
+        
         session.dataTask(with: url) { data, _, error in
             guard error == nil, let data = data else {
                 XCTFail("Error: \(String(describing: error))")
@@ -82,7 +89,7 @@ final class AGFakeServerTests: XCTestCase {
             expectation.fulfill()
         }.resume()
         
-        RunLoop.main.run(until: Date() + 0.1) // Server need some time to create response handler
+        wait(for: [serverReadyExpectation], timeout: 5) // Server needs some time to create response handler
         
         // Let's prepare custom response
         var response = AGMockServer.CustomResponse()
@@ -94,5 +101,17 @@ final class AGFakeServerTests: XCTestCase {
         XCTAssertTrue(log.count == 1, "Wrong number of log messages: \(log.count)")
         XCTAssertTrue(log.first == url, "Wrong log: \(log)")
     }
+//}
+//
+//extension AGMockServerTests {
+     func notificationHandler (notification: NSNotification) {
+        guard let url = notification.userInfo?["url"] as? URL else {
+            return
+        }
+        guard let expectation = waitingUrls[url] else {
+            return
+        }
+        expectation.fulfill()
+        waitingUrls.removeValue(forKey: url)
+    }
 }
-
