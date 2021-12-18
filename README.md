@@ -10,19 +10,27 @@ This framework is a small and simple implementation of HTTP server mock. You may
 
 ## Installation
 This is a [Swift Package](https://www.swift.org/package-manager/) so you may add it as a single SPM dependency in your Package.swift:
+```swift
     dependencies: [
         .package(url: "https://github.com/AlexeyGolovenkov/AGMockServer.git", .upToNextMinor(from: "0.0.1"))
     ]
+```
 
 ## Usage
 In your code:
 1. Import the framework
+   ```swift
     import AGMockServer 
+   ```
 2. Create a session you'll be using to get data from Network
+    ```swift
     let session: URLSession = AGMockServer.shared.hackedSession(for: URLSession.shared)
+    ```
 3. Write a class that implements AGMRequestHandler protocol
 4. Register this class in AGMockServer object
+    ```swift
     AGMockServer.shared.registerHandler(FeedHandler())
+    ```
     
 Now all the requests to url that can be handled in your handler will be sent not to Network, but to your class.
 
