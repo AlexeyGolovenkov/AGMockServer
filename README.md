@@ -9,7 +9,7 @@ This framework is a small and simple implementation of HTTP server mock. You may
 4. Implement client code while server side is not ready
 
 ## Installation
-This is a [Swift Package](https://www.swift.org/package-manager/) so you may add it as a single SPM dependency in your Package.swift:
+This is a [Swift Package](https://www.swift.org/package-manager/), so you can add it just as an SPM dependency in your Package.swift:
 ```swift
     dependencies: [
         .package(url: "https://github.com/AlexeyGolovenkov/AGMockServer.git", .upToNextMinor(from: "0.0.1"))
