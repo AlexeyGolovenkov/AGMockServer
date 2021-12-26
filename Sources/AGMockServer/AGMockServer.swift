@@ -8,7 +8,7 @@
 import Foundation
 
 public class AGMockServer {
-    
+        
     enum AGMockError: Error {
         case autohandling(String)
         case noHandler(String)
@@ -26,20 +26,18 @@ public class AGMockServer {
         mutating func setValue<T>(_ value: T) where T : Encodable {
             data = (try? JSONEncoder().encode(value)) ?? Data()
         }
+        
+        func HTTPResponse(for url: URL) -> HTTPURLResponse {
+            return HTTPURLResponse(url: url,
+                                   statusCode: self.statusCode,
+                                   httpVersion: Constants.httpVersion,
+                                   headerFields: self.headers) ?? HTTPURLResponse()
+        }
     }
     
     public static var shared = AGMockServer()
     
     public var ignoredParameters = [String]()
-    
-    public var autoHandling = true {
-        didSet {
-            AGMURLProtocol.autoHandling = autoHandling
-            if autoHandling {
-                sendAllResponses()
-            }
-        }
-    }
     
     private var session: URLSession?
            
@@ -52,55 +50,56 @@ public class AGMockServer {
         return URLSession(configuration: configuration)
     }
     
-    public func send(_ userResponse: CustomResponse, for url: URL) throws {
-        guard !autoHandling else {
-            throw AGMockError.autohandling("Set autohandling to false when use send method")
+    /// Prepares custom response for specified URL. It will be sent once as a response when clinet app tryes to get data from the url.
+    /// - Parameters:
+    ///   - response: Response to be sent to client
+    ///   - url: URL to be handled
+    ///   - count: number of times the client should receive our response. Default value is 1
+    /// - Note: Use this method as a lightweight alternative to AGMRequestHandler
+    public func prepareResponse(_ response: CustomResponse, for url: URL, count: Int = 1) {
+        guard count > 0 else {
+            return
         }
+        for _ in 0 ..< count {
+            AGMURLProtocol.predefinedResponses.addResponse(response, for: url)
+        }        
+    }
         
-        guard let urlProtocol = AGMHandlersStorage.shared.handler(for: url) else {
-            throw AGMockError.noHandler("No handlers found for \(url.absoluteString)")
+    /// Removes predefined response for specified URL
+    ///
+    /// Don't  use this method to remove response you've created in prepareResponse(:,:,:) method when you already received the response. AGMockServer removes the used response automatically, so don't worry about clearing the garbage.
+    ///
+    /// - Parameters:
+    ///   - url: url you don't want to handle any more
+    ///   - count: Number of responses you want to delete
+    public func removeResponse(for url: URL, count: Int = 1) {
+        guard count > 0 else {
+            return
         }
-        AGMHandlersStorage.shared.handlers.remove(urlProtocol)
-        DispatchQueue.global(qos: .background).asyncAfter(deadline: .now() + Constants.timeout) {
-            let response = HTTPURLResponse(url: url,
-                                           statusCode: userResponse.statusCode,
-                                           httpVersion: Constants.httpVersion,
-                                           headerFields: userResponse.headers) ?? HTTPURLResponse()
-            urlProtocol.send(response, data: userResponse.data)
+        for _ in 0 ..< count {
+            AGMURLProtocol.predefinedResponses.removeResponse(for: url)
         }
     }
     
+    /// Registers a new handler
+    /// - Parameter handler: New handler to be added to handlers list
     public func registerHandler(_ handler: AGMRequestHandler) {
         AGMRequestHandlersFactory.add(handler: handler)
     }
     
+    /// Removes handler from handlers list
+    /// - Parameter handler: Handler to be removed
     public func unregisterHandler(_ handler: AGMRequestHandler) {
         AGMRequestHandlersFactory.remove(handler: handler)
     }
     
+    /// Removes all handlers
     public func unregisterAllHandlers() {
         AGMRequestHandlersFactory.clearAll()
-    }
-    
-    // MARK: - Private methods
-        
-    private func sendAllResponses() {
-        let handlers = AGMHandlersStorage.shared.handlers.allObjects
-        AGMHandlersStorage.shared.handlers.removeAllObjects()
-        DispatchQueue.global(qos: .background).asyncAfter(deadline: .now() + Constants.timeout) {
-            for urlProtocol in handlers {
-                guard let url = urlProtocol.request.url else {
-                    continue
-                }
-                let answer = urlProtocol.handler.response(for: url, from: nil)
-                urlProtocol.send(answer.response, data: answer.data)
-            }
-        }
     }
 }
 
 fileprivate enum Constants {
     static let defaultStatus = 200
     static let httpVersion = "1.0"
-    static let timeout: TimeInterval = 0.200
 }
