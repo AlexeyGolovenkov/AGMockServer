@@ -9,16 +9,16 @@ import Foundation
 
 final class AGMURLProtocol: URLProtocol {
     var handler: AGMRequestHandler!
-    static var storage = AGMPredefinedResponsesStorage()
+    static var predefinedResponses = AGMPredefinedResponsesStorage()
     
     override class func canInit(with request: URLRequest) -> Bool {
         guard let url = request.url else { return false }
-        return AGMRequestHandlersFactory.handler(for: url) != nil || Self.storage.response(for: url) != nil
+        return AGMRequestHandlersFactory.handler(for: url) != nil || Self.predefinedResponses.response(for: url) != nil
     }
     
     override class func canInit(with task: URLSessionTask) -> Bool {
         guard let url = task.originalRequest?.url else { return false }
-        let result = AGMRequestHandlersFactory.handler(for: url) != nil || Self.storage.response(for: url) != nil
+        let result = AGMRequestHandlersFactory.handler(for: url) != nil || Self.predefinedResponses.response(for: url) != nil
         if result {
             AGMRequestLog.main.add(url)
         }
@@ -31,11 +31,11 @@ final class AGMURLProtocol: URLProtocol {
             return
         }
         
-        if let response = Self.storage.response(for: url) {
+        if let response = Self.predefinedResponses.response(for: url) {
             DispatchQueue.global(qos: .background).async {
                 self.send(response.HTTPResponse(for: url), data: response.data)
             }
-            Self.storage.removeResponse(for: url)
+            Self.predefinedResponses.removeResponse(for: url)
             return
         }
         

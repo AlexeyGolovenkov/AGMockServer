@@ -13,7 +13,7 @@ class AGMPredefinedResponsesStorage {
         let response: AGMockServer.CustomResponse
     }
     
-    private var storage: [PredefinedResponse] = []
+    var storage: [PredefinedResponse] = []
     
     func addResponse(_ response: AGMockServer.CustomResponse, for url: URL) {
         storage.append(PredefinedResponse(url: url, response: response))

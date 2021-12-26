@@ -50,13 +50,35 @@ public class AGMockServer {
         return URLSession(configuration: configuration)
     }
     
+    /// Prepares custom response for specified URL. It will be sent once as a response when clinet app tryes to get data from the url.
+    /// - Parameters:
+    ///   - response: Response to be sent to client
+    ///   - url: URL to be handled
+    ///   - count: number of times the client should receive our response. Default value is 1
+    /// - Note: Use this method as a lightweight alternative to AGMRequestHandler
     public func prepareResponse(_ response: CustomResponse, for url: URL, count: Int = 1) {
         guard count > 0 else {
             return
         }
         for _ in 0 ..< count {
-            AGMURLProtocol.storage.addResponse(response, for: url)
+            AGMURLProtocol.predefinedResponses.addResponse(response, for: url)
         }        
+    }
+        
+    /// Removes predefined response for specified URL
+    ///
+    /// Don't  use this method to remove response you've created in prepareResponse(:,:,:) method when you already received the response. AGMockServer removes the used response automatically, so don't worry about clearing the garbage.
+    ///
+    /// - Parameters:
+    ///   - url: url you don't want to handle any more
+    ///   - count: Number of responses you want to delete
+    public func removeResponse(for url: URL, count: Int = 1) {
+        guard count > 0 else {
+            return
+        }
+        for _ in 0 ..< count {
+            AGMURLProtocol.predefinedResponses.removeResponse(for: url)
+        }
     }
     
     /// Registers a new handler
@@ -74,7 +96,7 @@ public class AGMockServer {
     /// Removes all handlers
     public func unregisterAllHandlers() {
         AGMRequestHandlersFactory.clearAll()
-    }    
+    }
 }
 
 fileprivate enum Constants {
