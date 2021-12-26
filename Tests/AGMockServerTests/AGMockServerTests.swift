@@ -8,20 +8,16 @@ var session: URLSession!
 
 final class AGMockServerTests: XCTestCase {
     
-    var waitingUrls = [URL: XCTestExpectation]()
-    
     override func setUp() {
         super.setUp()
         if session == nil {
             session = server.hackedSession(for: URLSession.shared)
         }
         AGMRequestLog.main.clear()
-        NotificationCenter.default.addObserver(self, selector: #selector(notificationHandler), name: AGMockServer.handlerReadyNotification, object: nil)
     }
     
     override func tearDown() {
         server.unregisterAllHandlers()
-        NotificationCenter.default.removeObserver(self, name: AGMockServer.handlerReadyNotification, object: nil)
         super.tearDown()
     }
     
@@ -62,16 +58,15 @@ final class AGMockServerTests: XCTestCase {
     /// Tests custom response
     /// Sends a request to echo-REST but forces server to send another response, not the default one
     func testCustomResponse() throws {
-        defer {
-            server.autoHandling = true // Set autohandling back to true to not break other tests
-        }
         server.registerHandler(EchoHandler())
-        server.autoHandling = false // Set autohandling to false to alow test to send it's own response
         
         let url = URL(string: "https://localhost/echo?param1=value1&param2=value2")!
         let expectation = self.expectation(description: "Custom response expectation")
-        let serverReadyExpectation = self.expectation(description: "Server handler ready")
-        waitingUrls[url] = serverReadyExpectation
+        
+        // Let's prepare custom response
+        var response = AGMockServer.CustomResponse()
+        response.setValue(["param":"value"])
+        server.prepareResponse(response, for: url)
         
         session.dataTask(with: url) { data, _, error in
             guard error == nil, let data = data else {
@@ -89,29 +84,10 @@ final class AGMockServerTests: XCTestCase {
             expectation.fulfill()
         }.resume()
         
-        wait(for: [serverReadyExpectation], timeout: 5) // Server needs some time to create response handler
-        
-        // Let's prepare custom response
-        var response = AGMockServer.CustomResponse()
-        response.setValue(["param":"value"])
-        try server.send(response, for: url)
         
         wait(for: [expectation], timeout: 5)
         let log = AGMRequestLog.main.log()
         XCTAssertTrue(log.count == 1, "Wrong number of log messages: \(log.count)")
         XCTAssertTrue(log.first == url, "Wrong log: \(log)")
-    }
-}
-
-extension AGMockServerTests {
-     func notificationHandler (notification: NSNotification) {
-        guard let url = notification.userInfo?["url"] as? URL else {
-            return
-        }
-        guard let expectation = waitingUrls[url] else {
-            return
-        }
-        expectation.fulfill()
-        waitingUrls.removeValue(forKey: url)
     }
 }

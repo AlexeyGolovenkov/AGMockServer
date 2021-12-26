@@ -8,9 +8,7 @@
 import Foundation
 
 public class AGMockServer {
-    
-    public static let handlerReadyNotification = Notification.Name("AGMHandlerReady")
-    
+        
     enum AGMockError: Error {
         case autohandling(String)
         case noHandler(String)
@@ -28,20 +26,18 @@ public class AGMockServer {
         mutating func setValue<T>(_ value: T) where T : Encodable {
             data = (try? JSONEncoder().encode(value)) ?? Data()
         }
+        
+        func HTTPResponse(for url: URL) -> HTTPURLResponse {
+            return HTTPURLResponse(url: url,
+                                   statusCode: self.statusCode,
+                                   httpVersion: Constants.httpVersion,
+                                   headerFields: self.headers) ?? HTTPURLResponse()
+        }
     }
     
     public static var shared = AGMockServer()
     
     public var ignoredParameters = [String]()
-    
-    public var autoHandling = true {
-        didSet {
-            AGMURLProtocol.autoHandling = autoHandling
-            if autoHandling {
-                sendAllResponses()
-            }
-        }
-    }
     
     private var session: URLSession?
            
@@ -54,22 +50,13 @@ public class AGMockServer {
         return URLSession(configuration: configuration)
     }
     
-    public func send(_ userResponse: CustomResponse, for url: URL) throws {
-        guard !autoHandling else {
-            throw AGMockError.autohandling("Set autohandling to false when use send method")
+    public func prepareResponse(_ response: CustomResponse, for url: URL, count: Int = 1) {
+        guard count > 0 else {
+            return
         }
-        
-        guard let urlProtocol = AGMHandlersStorage.shared.handler(for: url) else {
-            throw AGMockError.noHandler("No handlers found for \(url.absoluteString)")
-        }
-        AGMHandlersStorage.shared.handlers.remove(urlProtocol)
-        DispatchQueue.global(qos: .background).async() {
-            let response = HTTPURLResponse(url: url,
-                                           statusCode: userResponse.statusCode,
-                                           httpVersion: Constants.httpVersion,
-                                           headerFields: userResponse.headers) ?? HTTPURLResponse()
-            urlProtocol.send(response, data: userResponse.data)
-        }
+        for _ in 0 ..< count {
+            AGMURLProtocol.storage.addResponse(response, for: url)
+        }        
     }
     
     /// Registers a new handler
@@ -87,23 +74,7 @@ public class AGMockServer {
     /// Removes all handlers
     public func unregisterAllHandlers() {
         AGMRequestHandlersFactory.clearAll()
-    }
-    
-    // MARK: - Private methods
-        
-    private func sendAllResponses() {
-        let handlers = AGMHandlersStorage.shared.handlers.allObjects
-        AGMHandlersStorage.shared.handlers.removeAllObjects()
-        DispatchQueue.global(qos: .background).async() {
-            for urlProtocol in handlers {
-                guard let url = urlProtocol.request.url else {
-                    continue
-                }
-                let answer = urlProtocol.handler.response(for: url, from: nil)
-                urlProtocol.send(answer.response, data: answer.data)
-            }
-        }
-    }
+    }    
 }
 
 fileprivate enum Constants {
