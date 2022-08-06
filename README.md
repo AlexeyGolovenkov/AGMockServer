@@ -9,11 +9,17 @@ This framework is a small and simple implementation of HTTP server mock. You may
 4. Implement client code while server side is not ready
 
 ## Installation
-This is a [Swift Package](https://www.swift.org/package-manager/), so you can add it just as an SPM dependency in your Package.swift:
+### SPM
+Once you are using [Swift Package Manager](https://www.swift.org/package-manager/), you can add AGMockServer as an SPM dependency in your Package.swift:
 ```swift
     dependencies: [
-        .package(url: "https://github.com/AlexeyGolovenkov/AGMockServer.git", .upToNextMinor(from: "0.0.1"))
+        .package(url: "https://github.com/AlexeyGolovenkov/AGMockServer.git", .upToNextMinor(from: "1.0"))
     ]
+```
+### CocoaPods
+[CocoaPods](https://cocoapods.org) is a dependency manager for Cocoa projects. For usage and installation instructions, visit their website. To integrate AGMockServer into your Xcode project using CocoaPods, specify it in your Podfile:
+```ruby
+    pod 'AGMockServer'
 ```
 
 ## Usage
