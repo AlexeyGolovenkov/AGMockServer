@@ -23,6 +23,9 @@ let package = Package(
             dependencies: []),
         .testTarget(
             name: "AGMockServerTests",
-            dependencies: ["AGMockServer"]),
+            dependencies: ["AGMockServer"],
+            resources: [
+                .process("TestData")
+            ]),
     ]
 )

@@ -208,4 +208,53 @@ final class AGMockServerTests: XCTestCase {
         server.removeResponse(for: url, count: 6)
         XCTAssertTrue(AGMURLProtocol.predefinedResponses.storage.count == 0)
     }
+    
+    func testCorrectResourceHandler() {
+        let bundle = Bundle.module
+        let handler = AGMResourceBasedHandler(for: "localhost", with: "response", ext: "json", in: bundle)
+        server.registerHandler(handler)
+        
+        let url = URL(string: "https://localhost/any/rest")!
+        let expectation = self.expectation(description: "Correct resource handler expectation")
+        
+        session.dataTask(with: url) { data, response, error in
+            guard error == nil, let data = data else {
+                XCTFail("Error: \(String(describing: error))")
+                expectation.fulfill()
+                return
+            }
+            do {
+                XCTAssertTrue((response as? HTTPURLResponse)?.statusCode == 200, "Wrong status code")
+                let responseBody = try JSONDecoder().decode([String: String].self, from: data)
+                XCTAssertTrue(responseBody == ["string": "Title"], "Wrong response: \(responseBody)")
+            } catch {
+                XCTFail("Can't parse request: \(error)")
+            }
+            expectation.fulfill()
+        }.resume()
+        
+        wait(for: [expectation], timeout: 5)
+    }
+    
+    func testIncorrectResourceHandler() {
+        let bundle = Bundle.module
+        let handler = AGMResourceBasedHandler(for: "localhost", with: "wrongResponse", ext: "json", in: bundle)
+        server.registerHandler(handler)
+        
+        let url = URL(string: "https://localhost/any/rest")!
+        let expectation = self.expectation(description: "Correct resource handler expectation")
+        
+        session.dataTask(with: url) { data, response, error in
+            guard error == nil, let data = data else {
+                XCTFail("Error: \(String(describing: error))")
+                expectation.fulfill()
+                return
+            }
+            XCTAssertTrue((response as? HTTPURLResponse)?.statusCode == 404, "Wrong status code")
+            XCTAssertTrue(data.isEmpty)
+            expectation.fulfill()
+        }.resume()
+        
+        wait(for: [expectation], timeout: 5)
+    }
 }
