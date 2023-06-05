@@ -39,6 +39,11 @@ public class AGMockServer {
     
     public var ignoredParameters = [String]()
     
+    /// If true, MockServer return 403 response for all requests without registered handlers. Else these requests are handled by system network services as usual.
+    ///
+    /// This property is useful to find unit tests that use real network instead of mocked data.
+    public var isNetworkBlocked: Bool = false
+    
     private var session: URLSession?
            
     public func hackedSession(for session: URLSession) -> URLSession {
@@ -97,9 +102,18 @@ public class AGMockServer {
     public func unregisterAllHandlers() {
         AGMRequestHandlersFactory.clearAll()
     }
-}
-
-fileprivate enum Constants {
-    static let defaultStatus = 200
-    static let httpVersion = "1.0"
+    
+    /// Registers resource file as data source for some requests
+    ///
+    /// See also: ``AGMResourceBasedHandler``
+    ///
+    /// - Parameters:
+    ///   - format: Format of URL to be handled with provided file. Supports regex.
+    ///   - fileName: Name of file with answer
+    ///   - bundle: Bundle that contains the file
+    public func registerResponse(for format: String, with fileName: String, in bundle: Bundle = .main) {
+        let splittedName = fileName.splitFileName()
+        let handler = AGMResourceBasedHandler(for: format, with: splittedName.fileName, ext: splittedName.fileNameExtention, in: bundle)
+        registerHandler(handler)
+    }
 }

@@ -3,7 +3,7 @@ import XCTest
 
 @testable import AGMockServer
 
-var server = AGMockServer()
+var server = AGMockServer.shared
 var session: URLSession!
 
 final class AGMockServerTests: XCTestCase {
@@ -210,9 +210,7 @@ final class AGMockServerTests: XCTestCase {
     }
     
     func testCorrectResourceHandler() {
-        let bundle = Bundle.module
-        let handler = AGMResourceBasedHandler(for: "localhost", with: "response", ext: "json", in: bundle)
-        server.registerHandler(handler)
+        server.registerResponse(for: "localhost", with: "response.json", in: .module)
         
         let url = URL(string: "https://localhost/any/rest")!
         let expectation = self.expectation(description: "Correct resource handler expectation")
@@ -257,4 +255,64 @@ final class AGMockServerTests: XCTestCase {
         
         wait(for: [expectation], timeout: 5)
     }
+    
+    func testNetworkAllowed() {
+        guard let url = URL(string: Constants.externalURL) else {
+            XCTFail("Wrong url")
+            return
+        }
+        let expectation = self.expectation(description: "Correct resource handler expectation")
+        
+        session.dataTask(with: url) { data, response, error in
+            guard error == nil, let data = data else {
+                XCTFail("Error: \(String(describing: error))")
+                expectation.fulfill()
+                return
+            }
+            XCTAssertTrue((response as? HTTPURLResponse)?.statusCode == 200, "Wrong status code")
+            XCTAssertTrue(data.count > 100)
+            expectation.fulfill()
+        }.resume()
+        
+        wait(for: [expectation], timeout: 30)
+    }
+    
+    func testNetworkForbidden() {
+        guard let url = URL(string: Constants.externalURL) else {
+            XCTFail("Wrong url")
+            return
+        }
+        let expectation = self.expectation(description: "Correct resource handler expectation")
+        server.isNetworkBlocked = true
+        session.dataTask(with: url) { data, response, error in
+            guard error == nil, let data = data else {
+                XCTFail("Error: \(String(describing: error))")
+                expectation.fulfill()
+                return
+            }
+            if let code = (response as? HTTPURLResponse)?.statusCode {
+                XCTAssertTrue(code == 403, "Wrong status code: \(code)")
+            } else {
+                XCTFail("Status code not obtained")
+            }
+            do {
+                let responseBody = try JSONDecoder().decode([String: String].self, from: data)
+                XCTAssertTrue(responseBody == ["error": "Forbidden"], "Wrong response: \(responseBody)")
+            } catch {
+                XCTFail("Can't parse request: \(error)")
+            }
+            expectation.fulfill()
+        }.resume()
+        
+        wait(for: [expectation], timeout: 5)
+        server.isNetworkBlocked = false
+    }
 }
+
+private extension AGMockServerTests {
+    
+    enum Constants {
+        static let externalURL = "https://example.com"
+    }
+}
+
