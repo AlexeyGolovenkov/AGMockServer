@@ -33,10 +33,12 @@ public class AGMResourceBasedHandler: AGMRequestHandler {
     
     public func response(for url: URL, from data: Data?) -> (response: HTTPURLResponse, data: Data) {
         let data = defaultData(for: url)
-        let statusCode = data.isEmpty ? 404 : 200
+        let statusCode = data.isEmpty ?
+            Constants.notFoundStatus :
+            Constants.successStatus
         let response = HTTPURLResponse(url: url,
                                        statusCode: statusCode,
-                                       httpVersion: "1.0",
+                                       httpVersion: Constants.httpVersion,
                                        headerFields: [:]) ?? HTTPURLResponse()
         return (response: response, data: data)
     }

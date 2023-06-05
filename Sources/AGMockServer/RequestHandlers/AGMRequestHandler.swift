@@ -36,7 +36,7 @@ public extension AGMRequestHandler {
     
     func response(for url: URL, from data: Data?) -> (response: HTTPURLResponse, data: Data) {
         let response = HTTPURLResponse(url: url,
-                                       statusCode: Constants.defaultStatus,
+                                       statusCode: Constants.successStatus,
                                        httpVersion: Constants.httpVersion,
                                        headerFields: [:]) ?? HTTPURLResponse()
         return (response: response, data: data ?? defaultData(for: url))
@@ -60,7 +60,9 @@ public extension AGMRequestHandler {
 
 // MARK: - Constants
 
-fileprivate enum Constants {
-    static let defaultStatus = 200
+enum Constants {
+    static let successStatus = 200
+    static let forbiddenStatus = 403
+    static let notFoundStatus = 404
     static let httpVersion = "1.0"
 }

@@ -16,6 +16,9 @@ final class AGMRequestHandlersFactory {
                 return handler
             }
         }
+        if AGMockServer.shared.isNetworkBlocked {
+            return AGMForbiddenHandler()
+        }
         return nil
     }
     
