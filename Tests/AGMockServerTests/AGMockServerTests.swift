@@ -210,9 +210,7 @@ final class AGMockServerTests: XCTestCase {
     }
     
     func testCorrectResourceHandler() {
-        let bundle = Bundle.module
-        let handler = AGMResourceBasedHandler(for: "localhost", with: "response", ext: "json", in: bundle)
-        server.registerHandler(handler)
+        server.registerResponse(for: "localhost", with: "response.json", in: .module)
         
         let url = URL(string: "https://localhost/any/rest")!
         let expectation = self.expectation(description: "Correct resource handler expectation")

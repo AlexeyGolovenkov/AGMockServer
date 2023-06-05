@@ -97,6 +97,20 @@ public class AGMockServer {
     public func unregisterAllHandlers() {
         AGMRequestHandlersFactory.clearAll()
     }
+    
+    /// Registers resource file as data source for some requests
+    ///
+    /// See also: ``AGMResourceBasedHandler``
+    ///
+    /// - Parameters:
+    ///   - format: Format of URL to be handled with provided file. Supports regex.
+    ///   - fileName: Name of file with answer
+    ///   - bundle: Bundle that contains the file    
+    public func registerResponse(for format: String, with fileName: String, in bundle: Bundle = .main) {
+        let splittedName = fileName.splitFileName()
+        let handler = AGMResourceBasedHandler(for: format, with: splittedName.fileName, ext: splittedName.fileNameExtention, in: bundle)
+        registerHandler(handler)
+    }
 }
 
 fileprivate enum Constants {

@@ -11,10 +11,10 @@ public class AGMResourceBasedHandler: AGMRequestHandler {
     
     public let urlFormat: String
     public let fileName: String
-    public let fileNameExtension: String
+    public let fileNameExtension: String?
     public let bundle: Bundle
     
-    init(for format: String, with fileName: String, ext: String, in bundle: Bundle = .main) {
+    init(for format: String, with fileName: String, ext: String?, in bundle: Bundle = .main) {
         urlFormat = format
         self.fileName = fileName
         fileNameExtension = ext
