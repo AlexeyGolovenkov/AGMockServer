@@ -14,7 +14,7 @@ public class AGMResourceBasedHandler: AGMRequestHandler {
     public let fileNameExtension: String?
     public let bundle: Bundle
     
-    init(for format: String, with fileName: String, ext: String?, in bundle: Bundle = .main) {
+    public init(for format: String, with fileName: String, ext: String?, in bundle: Bundle = .main) {
         urlFormat = format
         self.fileName = fileName
         fileNameExtension = ext

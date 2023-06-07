@@ -65,7 +65,7 @@ final class AGMockServerTests: XCTestCase {
         
         // Let's prepare custom response
         var response = AGMockServer.CustomResponse()
-        response.setValue(["param":"value"])
+        response.setResponseBody(["param":"value"])
         server.prepareResponse(response, for: url)
         
         session.dataTask(with: url) { data, _, error in
@@ -103,7 +103,7 @@ final class AGMockServerTests: XCTestCase {
         
         // Let's prepare custom response
         var response = AGMockServer.CustomResponse()
-        response.setValue(["param":"value"])
+        response.setResponseBody(["param":"value"])
         server.prepareResponse(response, for: url, count: 2)
         
         session.dataTask(with: url) { data, _, error in
@@ -181,7 +181,7 @@ final class AGMockServerTests: XCTestCase {
         
         // Let's prepare custom response
         var response = AGMockServer.CustomResponse()
-        response.setValue(["param":"value"])
+        response.setResponseBody(["param":"value"])
         server.prepareResponse(response, for: url, count: 8)
         
         XCTAssertTrue(AGMURLProtocol.predefinedResponses.storage.count == 8)

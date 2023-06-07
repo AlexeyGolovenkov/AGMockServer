@@ -15,19 +15,25 @@ public class AGMockServer {
     }
     
     public struct CustomResponse {
-        var data: Data = Data()
-        var statusCode: Int = 200
-        var headers: [String:String]? = nil
+        public var data: Data
+        public var statusCode: Int
+        public var headers: [String:String]?
         
-        mutating func setString(_ string: String) {
+        public init(data: Data = Data(), statusCode: Int = 200, headers: [String : String]? = nil) {
+            self.data = data
+            self.statusCode = statusCode
+            self.headers = headers
+        }
+        
+        public mutating func setResponseBody(_ string: String) {
             data = string.data(using: .utf8) ?? Data()
         }
         
-        mutating func setValue<T>(_ value: T) where T : Encodable {
+        public mutating func setResponseBody<T>(_ value: T) where T : Encodable {
             data = (try? JSONEncoder().encode(value)) ?? Data()
         }
         
-        func HTTPResponse(for url: URL) -> HTTPURLResponse {
+        public func HTTPResponse(for url: URL) -> HTTPURLResponse {
             return HTTPURLResponse(url: url,
                                    statusCode: self.statusCode,
                                    httpVersion: Constants.httpVersion,
