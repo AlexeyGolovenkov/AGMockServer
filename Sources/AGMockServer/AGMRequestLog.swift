@@ -13,5 +13,5 @@ public class AGMRequestLog: AGMStorage {
     
     public private(set) static var main = AGMRequestLog()
     
-    public var data = AGMStorageData<URL>()
+    public var data = AGMStorageData<Item>()
 }

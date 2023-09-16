@@ -10,6 +10,7 @@ import Foundation
 final class AGMURLProtocol: URLProtocol {
     var handler: AGMRequestHandler!
     static var predefinedResponses = AGMPredefinedResponsesStorage()
+    static var interceptors = AGMInterceptorStorage()
     
     override class func canInit(with request: URLRequest) -> Bool {
         guard let url = request.url else { return false }
@@ -33,7 +34,10 @@ final class AGMURLProtocol: URLProtocol {
         
         if let response = Self.predefinedResponses.response(for: url) {
             DispatchQueue.global(qos: .background).async {
-                self.send(response.HTTPResponse(for: url), data: response.data)
+                let httpResponse = response.HTTPResponse(for: url)
+                let handledAnswer = self.applyInterceptors(to: httpResponse, with: response.data)
+                AGMResponseLog.main.add((response: handledAnswer.response, data: handledAnswer.data))
+                self.send(handledAnswer.response, data: handledAnswer.data ?? Data())
             }
             Self.predefinedResponses.removeResponse(for: url)
             return
@@ -42,7 +46,9 @@ final class AGMURLProtocol: URLProtocol {
         handler = AGMRequestHandlersFactory.main.handler(for: url)
         DispatchQueue.global(qos: .background).async {
             let answer = self.handler.response(for: url, from: nil)
-            self.send(answer.response, data: answer.data)
+            let handledAnswer = self.applyInterceptors(to: answer.response, with: answer.data)
+            AGMResponseLog.main.add(handledAnswer)
+            self.send(handledAnswer.response, data: handledAnswer.data ?? Data())
         }
     }
         
@@ -56,5 +62,14 @@ final class AGMURLProtocol: URLProtocol {
         client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
         client?.urlProtocol(self, didLoad: data)
         client?.urlProtocolDidFinishLoading(self)
+    }
+    
+    func applyInterceptors(to response: URLResponse, with data: Data?) -> (response: URLResponse, data: Data?) {
+        var responseWithData = (response: response, data: data)
+        let interceptors = Self.interceptors.log()
+        interceptors.forEach { interceptor in
+            responseWithData = interceptor.response(for: responseWithData.response, from: responseWithData.data)
+        }
+        return responseWithData
     }
 }
