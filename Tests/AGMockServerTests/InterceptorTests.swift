@@ -21,7 +21,7 @@ final class InterceptorTests: XCTestCase {
     override func tearDownWithError() throws {
         server.unregisterAllHandlers()
         server.removeAllInterceptors()
-        XCTAssertTrue(AGMURLProtocol.interceptors.log().count == 0, "Interseptors not removed")
+        XCTAssertTrue(AGMURLProtocol.interceptorStorage.log().count == 0, "Interseptors not removed")
         super.tearDown()
     }
 

@@ -10,7 +10,7 @@ import Foundation
 final class AGMURLProtocol: URLProtocol {
     var handler: AGMRequestHandler!
     static var predefinedResponses = AGMPredefinedResponsesStorage()
-    static var interceptors = AGMInterceptorStorage()
+    static var interceptorStorage = AGMInterceptorStorage()
     
     override class func canInit(with request: URLRequest) -> Bool {
         guard let url = request.url else { return false }
@@ -52,7 +52,9 @@ final class AGMURLProtocol: URLProtocol {
         }
     }
         
-    override func stopLoading() {}
+    override func stopLoading() {
+        // This method must be implemented as a part of URLProtocol
+    }
     
     override class func canonicalRequest(for request: URLRequest) -> URLRequest {
         return request
@@ -66,7 +68,7 @@ final class AGMURLProtocol: URLProtocol {
     
     func applyInterceptors(to response: URLResponse, with data: Data?) -> (response: URLResponse, data: Data?) {
         var responseWithData = (response: response, data: data)
-        let interceptors = Self.interceptors.log()
+        let interceptors = Self.interceptorStorage.log()
         interceptors.forEach { interceptor in
             responseWithData = interceptor.response(for: responseWithData.response, from: responseWithData.data)
         }

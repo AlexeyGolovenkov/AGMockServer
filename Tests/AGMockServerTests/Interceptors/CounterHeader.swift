@@ -17,9 +17,9 @@ struct CounterHeader: AGMInterceptor {
             return (response: response, data: data)
         }
         
-        let header = httpResponse.value(forHTTPHeaderField: Self.header) ?? ""
+        let headerValue = httpResponse.value(forHTTPHeaderField: Self.header) ?? ""
         var allHeaders = (httpResponse.allHeaderFields as? [String: String]) ?? [:]
-        allHeaders[Self.header] = "\((Int(header) ?? 0) + 1)"
+        allHeaders[Self.header] = "\((Int(headerValue) ?? 0) + 1)"
         let handledResponse = HTTPURLResponse(
             url: httpResponse.url ?? URL(string: "https://localhost")!,
             statusCode: httpResponse.statusCode,

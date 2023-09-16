@@ -24,7 +24,7 @@ extension URL {
 }
 
 infix operator ~ : ComparisonPrecedence
-func ~(left: URL, right: URL) -> Bool {
+func ~ (left: URL, right: URL) -> Bool {
     let ignoredParameters = AGMockServer.shared.ignoredParameters
     return left.withoutParameters(ignoredParameters) == right.withoutParameters(ignoredParameters)
 }
