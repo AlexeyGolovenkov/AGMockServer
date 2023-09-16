@@ -13,12 +13,12 @@ final class AGMURLProtocol: URLProtocol {
     
     override class func canInit(with request: URLRequest) -> Bool {
         guard let url = request.url else { return false }
-        return AGMRequestHandlersFactory.handler(for: url) != nil || Self.predefinedResponses.response(for: url) != nil
+        return AGMRequestHandlersFactory.main.handler(for: url) != nil || Self.predefinedResponses.response(for: url) != nil
     }
     
     override class func canInit(with task: URLSessionTask) -> Bool {
         guard let url = task.originalRequest?.url else { return false }
-        let result = AGMRequestHandlersFactory.handler(for: url) != nil || Self.predefinedResponses.response(for: url) != nil
+        let result = AGMRequestHandlersFactory.main.handler(for: url) != nil || Self.predefinedResponses.response(for: url) != nil
         if result {
             AGMRequestLog.main.add(url)
         }
@@ -39,7 +39,7 @@ final class AGMURLProtocol: URLProtocol {
             return
         }
         
-        handler = AGMRequestHandlersFactory.handler(for: url)
+        handler = AGMRequestHandlersFactory.main.handler(for: url)
         DispatchQueue.global(qos: .background).async {
             let answer = self.handler.response(for: url, from: nil)
             self.send(answer.response, data: answer.data)

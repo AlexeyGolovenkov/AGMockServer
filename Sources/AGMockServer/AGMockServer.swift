@@ -95,18 +95,18 @@ public class AGMockServer {
     /// Registers a new handler
     /// - Parameter handler: New handler to be added to handlers list
     public func registerHandler(_ handler: AGMRequestHandler) {
-        AGMRequestHandlersFactory.add(handler: handler)
+        AGMRequestHandlersFactory.main.add(handler: handler)
     }
     
     /// Removes handler from handlers list
     /// - Parameter handler: Handler to be removed
     public func unregisterHandler(_ handler: AGMRequestHandler) {
-        AGMRequestHandlersFactory.remove(handler: handler)
+        AGMRequestHandlersFactory.main.remove(handler: handler)
     }
     
     /// Removes all handlers
     public func unregisterAllHandlers() {
-        AGMRequestHandlersFactory.clearAll()
+        AGMRequestHandlersFactory.main.clearAll()
     }
     
     /// Registers resource file as data source for some requests
