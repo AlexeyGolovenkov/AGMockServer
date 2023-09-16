@@ -7,21 +7,11 @@
 
 import Foundation
 
-public class AGMRequestLog {
+public class AGMRequestLog: AGMStorage {
     
-    public static var main = AGMRequestLog()
+    public typealias Item = URL
     
-    private var storage = [URL]()
+    public private(set) static var main = AGMRequestLog()
     
-    func add(_ url: URL) {
-        storage.append(url)
-    }
-    
-    public func clear() {
-        storage.removeAll()
-    }
-    
-    public func log() -> [URL] {
-        return storage
-    }
+    public var data = AGMStorageData<Item>()
 }

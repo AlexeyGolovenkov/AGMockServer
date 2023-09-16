@@ -126,12 +126,12 @@ final class AGMockServerTests: XCTestCase {
         XCTAssertTrue(log.count == 1, "Wrong number of log messages: \(log.count)")
         XCTAssertTrue(log.first == url, "Wrong log: \(log)")
         
-        let secondExpectatin = self.expectation(description: "Second attempt")
+        let secondExpectation = self.expectation(description: "Second attempt")
         // second request
         session.dataTask(with: url) { data, _, error in
             guard error == nil, let data = data else {
                 XCTFail("Error: \(String(describing: error))")
-                secondExpectatin.fulfill()
+                secondExpectation.fulfill()
                 return
             }
             do {
@@ -140,10 +140,10 @@ final class AGMockServerTests: XCTestCase {
             } catch {
                 XCTFail("Can't parse request: \(error)")
             }
-            secondExpectatin.fulfill()
+            secondExpectation.fulfill()
         }.resume()
         
-        wait(for: [secondExpectatin], timeout: 5)
+        wait(for: [secondExpectation], timeout: 5)
         log = AGMRequestLog.main.log()
         XCTAssertTrue(log.count == 2, "Wrong number of log messages: \(log.count)")
         

@@ -8,13 +8,25 @@
 import Foundation
 
 final class AGMRequestHandlersFactory {
-    internal static var handlers = [AGMRequestHandler]()
     
-    static func handler(for url: URL) -> AGMRequestHandler? {
+    private(set) static var main = AGMRequestHandlersFactory()
+    
+    internal var handlers = [AGMRequestHandler]()
+    
+    private var handlersLock = NSLock()
+    
+    func handler(for url: URL) -> AGMRequestHandler? {
+        var foundHandler: AGMRequestHandler?
+        handlersLock.lock()
         for handler in handlers {
             if handler.canHandle(url) {
-                return handler
+                foundHandler = handler
+                break
             }
+        }
+        handlersLock.unlock()
+        if let foundHandler {
+            return foundHandler
         }
         if AGMockServer.shared.isNetworkBlocked {
             return AGMForbiddenHandler()
@@ -22,25 +34,35 @@ final class AGMRequestHandlersFactory {
         return nil
     }
     
-    static func add(handler requestHandler: AGMRequestHandler) {
+    func add(handler requestHandler: AGMRequestHandler) {
+        handlersLock.lock()
         handlers.append(requestHandler)
+        handlersLock.unlock()
     }
     
-    static func clearAll() {
+    func clearAll() {
+        handlersLock.lock()
         handlers.removeAll()
+        handlersLock.unlock()
     }
     
-    static func remove(handler requestHandler: AGMRequestHandler) {
+    func remove(handler requestHandler: AGMRequestHandler) {
+        handlersLock.lock()
         guard let index = handlers.firstIndex(where: {$0 === requestHandler}) else {
+            handlersLock.unlock()
             return
         }
         handlers.remove(at: index)
+        handlersLock.unlock()
     }
 
-    static func remove<T>(handlerByClass handlerClass: T.Type) {
+    func remove<T>(handlerByClass handlerClass: T.Type) {
+        handlersLock.lock()
         guard let index = handlers.firstIndex(where: {type(of: $0) == handlerClass}) else {
+            handlersLock.unlock()
             return
         }
         handlers.remove(at: index)
+        handlersLock.unlock()
     }
 }
