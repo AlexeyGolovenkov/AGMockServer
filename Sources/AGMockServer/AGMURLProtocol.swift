@@ -11,6 +11,11 @@ final class AGMURLProtocol: URLProtocol {
     static var predefinedResponses = AGMPredefinedResponsesStorage()
     static var interceptorStorage = AGMInterceptorStorage()
     
+    override class func canInit(with request: URLRequest) -> Bool {
+        guard let url = request.url else { return false }
+        return AGMRequestHandlersFactory.main.handler(for: url) != nil || Self.predefinedResponses.response(for: url) != nil
+    }
+    
     override class func canInit(with task: URLSessionTask) -> Bool {
         guard let url = task.originalRequest?.url else { return false }
         let result = AGMRequestHandlersFactory.main.handler(for: url) != nil || Self.predefinedResponses.response(for: url) != nil
