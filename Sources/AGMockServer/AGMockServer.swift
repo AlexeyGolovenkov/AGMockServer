@@ -50,6 +50,14 @@ public class AGMockServer {
     /// This property is useful to find unit tests that use real network instead of mocked data.
     public var isNetworkBlocked: Bool = false
     
+    public var requests: [URL] {
+        AGMRequestLog.main.log()
+    }
+    
+    public var responses: [(response: URLResponse, data: Data?)] {
+        AGMResponseLog.main.log()
+    }
+    
     private var session: URLSession?
            
     public func hackedSession(for session: URLSession) -> URLSession {
@@ -129,5 +137,18 @@ public class AGMockServer {
     
     public func removeAllInterceptors() {
         AGMURLProtocol.interceptorStorage.clear()
+    }
+    
+    public func clearRequestLog() {
+        AGMRequestLog.main.clear()
+    }
+    
+    public func clearResponseLog() {
+        AGMResponseLog.main.clear()
+    }
+    
+    public func clearLogs() {
+        clearRequestLog()
+        clearResponseLog()
     }
 }

@@ -13,7 +13,7 @@ final class AGMockServerTests: XCTestCase {
         if session == nil {
             session = server.hackedSession(for: URLSession.shared)
         }
-        AGMRequestLog.main.clear()
+        server.clearLogs()
     }
     
     override func tearDown() {
@@ -30,7 +30,7 @@ final class AGMockServerTests: XCTestCase {
     func testEcho() {
         server.registerHandler(EchoHandler())
         
-        let url = URL(string: "https://localhost/echo?param1=value1&param2=value2")!
+        let url = Constants.echoURL
         let expectation = self.expectation(description: "Echo expectation")
         session.dataTask(with: url) { data, _, error in
             guard error == nil, let data = data else {
@@ -60,7 +60,7 @@ final class AGMockServerTests: XCTestCase {
     func testCustomResponse() throws {
         server.registerHandler(EchoHandler())
         
-        let url = URL(string: "https://localhost/echo?param1=value1&param2=value2")!
+        let url = Constants.echoURL
         let expectation = self.expectation(description: "Custom response expectation")
         
         // Let's prepare custom response
@@ -93,7 +93,7 @@ final class AGMockServerTests: XCTestCase {
     
     func testSeveralCustomReponses() {
         server.registerHandler(EchoHandler())
-        let url = URL(string: "https://localhost/echo?param1=value1&param2=value2")!
+        let url = Constants.echoURL
         defer {
             // Remove responses prepared in this test to not break other tests in case of failure
             server.removeResponse(for: url, count: 2)
@@ -171,7 +171,7 @@ final class AGMockServerTests: XCTestCase {
     
     func testRemovePreparedResponses() {
         server.registerHandler(EchoHandler())
-        let url = URL(string: "https://localhost/echo?param1=value1&param2=value2")!
+        let url = Constants.echoURL
         defer {
             // Remove responses prepared in this test to not break other tests in case of failure
             server.removeResponse(for: url, count: 8)
@@ -307,12 +307,35 @@ final class AGMockServerTests: XCTestCase {
         wait(for: [expectation], timeout: 5)
         server.isNetworkBlocked = false
     }
+    
+    func testClearLogs() {
+        server.registerHandler(EchoHandler())
+        
+        let url = Constants.echoURL
+        let expectation = self.expectation(description: "Echo expectation")
+        session.dataTask(with: url) { data, _, error in
+            expectation.fulfill()
+        }.resume()
+        
+        wait(for: [expectation], timeout: 5)
+        let requests = server.requests
+        XCTAssertTrue(requests.count == 1, "Wrong number of log messages: \(requests.count)")
+        XCTAssertTrue(requests.first == url, "Wrong log: \(requests)")
+        
+        let responses = server.responses
+        XCTAssertTrue(responses.count == 1, "Wrong number of log messages: \(responses.count)")
+        XCTAssertTrue(responses.first?.response.url == url, "Wrong log: \(responses)")
+        
+        server.clearLogs()
+        XCTAssertTrue(server.requests.count == 0, "Wrong number of requests in server log: \(server.requests)")
+        XCTAssertTrue(server.responses.count == 0, "Wrong number of requests in server log: \(server.responses)")
+    }
 }
 
 private extension AGMockServerTests {
     
     enum Constants {
         static let externalURL = "https://example.com"
+        static let echoURL = URL(string: "https://localhost/echo?param1=value1&param2=value2")!
     }
 }
-
