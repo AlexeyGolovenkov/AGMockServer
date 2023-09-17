@@ -30,7 +30,7 @@ final class AGMockServerTests: XCTestCase {
     func testEcho() {
         server.registerHandler(EchoHandler())
         
-        let url = URL(string: "https://localhost/echo?param1=value1&param2=value2")!
+        let url = Constants.echoURL
         let expectation = self.expectation(description: "Echo expectation")
         session.dataTask(with: url) { data, _, error in
             guard error == nil, let data = data else {
@@ -60,7 +60,7 @@ final class AGMockServerTests: XCTestCase {
     func testCustomResponse() throws {
         server.registerHandler(EchoHandler())
         
-        let url = URL(string: "https://localhost/echo?param1=value1&param2=value2")!
+        let url = Constants.echoURL
         let expectation = self.expectation(description: "Custom response expectation")
         
         // Let's prepare custom response
@@ -93,7 +93,7 @@ final class AGMockServerTests: XCTestCase {
     
     func testSeveralCustomReponses() {
         server.registerHandler(EchoHandler())
-        let url = URL(string: "https://localhost/echo?param1=value1&param2=value2")!
+        let url = Constants.echoURL
         defer {
             // Remove responses prepared in this test to not break other tests in case of failure
             server.removeResponse(for: url, count: 2)
@@ -171,7 +171,7 @@ final class AGMockServerTests: XCTestCase {
     
     func testRemovePreparedResponses() {
         server.registerHandler(EchoHandler())
-        let url = URL(string: "https://localhost/echo?param1=value1&param2=value2")!
+        let url = Constants.echoURL
         defer {
             // Remove responses prepared in this test to not break other tests in case of failure
             server.removeResponse(for: url, count: 8)
@@ -311,22 +311,9 @@ final class AGMockServerTests: XCTestCase {
     func testClearLogs() {
         server.registerHandler(EchoHandler())
         
-        let url = URL(string: "https://localhost/echo?param1=value1&param2=value2")!
+        let url = Constants.echoURL
         let expectation = self.expectation(description: "Echo expectation")
         session.dataTask(with: url) { data, _, error in
-            guard error == nil, let data = data else {
-                XCTFail("Error: \(String(describing: error))")
-                expectation.fulfill()
-                return
-            }
-            do {
-                let response = try JSONDecoder().decode([String:String].self, from: data)
-                XCTAssertTrue(response.count == 2, "Wrong response: \(response)")
-                XCTAssertTrue(response["param1"] == "value1", "Wrong response: \(response)")
-                XCTAssertTrue(response["param2"] == "value2", "Wrong response: \(response)")
-            } catch {
-                XCTFail("Can't parse request: \(error)")
-            }
             expectation.fulfill()
         }.resume()
         
@@ -349,6 +336,6 @@ private extension AGMockServerTests {
     
     enum Constants {
         static let externalURL = "https://example.com"
+        static let echoURL = URL(string: "https://localhost/echo?param1=value1&param2=value2")!
     }
 }
-
