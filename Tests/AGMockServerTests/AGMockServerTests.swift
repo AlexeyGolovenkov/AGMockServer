@@ -13,7 +13,7 @@ final class AGMockServerTests: XCTestCase {
         if session == nil {
             session = server.hackedSession(for: URLSession.shared)
         }
-        AGMRequestLog.main.clear()
+        server.clearLogs()
     }
     
     override func tearDown() {
@@ -306,6 +306,42 @@ final class AGMockServerTests: XCTestCase {
         
         wait(for: [expectation], timeout: 5)
         server.isNetworkBlocked = false
+    }
+    
+    func testClearLogs() {
+        server.registerHandler(EchoHandler())
+        
+        let url = URL(string: "https://localhost/echo?param1=value1&param2=value2")!
+        let expectation = self.expectation(description: "Echo expectation")
+        session.dataTask(with: url) { data, _, error in
+            guard error == nil, let data = data else {
+                XCTFail("Error: \(String(describing: error))")
+                expectation.fulfill()
+                return
+            }
+            do {
+                let response = try JSONDecoder().decode([String:String].self, from: data)
+                XCTAssertTrue(response.count == 2, "Wrong response: \(response)")
+                XCTAssertTrue(response["param1"] == "value1", "Wrong response: \(response)")
+                XCTAssertTrue(response["param2"] == "value2", "Wrong response: \(response)")
+            } catch {
+                XCTFail("Can't parse request: \(error)")
+            }
+            expectation.fulfill()
+        }.resume()
+        
+        wait(for: [expectation], timeout: 5)
+        let requests = server.requests
+        XCTAssertTrue(requests.count == 1, "Wrong number of log messages: \(requests.count)")
+        XCTAssertTrue(requests.first == url, "Wrong log: \(requests)")
+        
+        let responses = server.responses
+        XCTAssertTrue(responses.count == 1, "Wrong number of log messages: \(responses.count)")
+        XCTAssertTrue(responses.first?.response.url == url, "Wrong log: \(responses)")
+        
+        server.clearLogs()
+        XCTAssertTrue(server.requests.count == 0, "Wrong number of requests in server log: \(server.requests)")
+        XCTAssertTrue(server.responses.count == 0, "Wrong number of requests in server log: \(server.responses)")
     }
 }
 
