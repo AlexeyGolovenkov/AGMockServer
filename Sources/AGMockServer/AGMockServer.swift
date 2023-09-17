@@ -7,7 +7,7 @@
 
 import Foundation
 
-public class AGMockServer {
+open class AGMockServer {
         
     enum AGMockError: Error {
         case autohandling(String)

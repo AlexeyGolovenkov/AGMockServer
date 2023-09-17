@@ -47,22 +47,20 @@ final class AGMRequestHandlersFactory {
     }
     
     func remove(handler requestHandler: AGMRequestHandler) {
+        defer { handlersLock.unlock() }
         handlersLock.lock()
         guard let index = handlers.firstIndex(where: {$0 === requestHandler}) else {
-            handlersLock.unlock()
             return
         }
         handlers.remove(at: index)
-        handlersLock.unlock()
     }
 
     func remove<T>(handlerByClass handlerClass: T.Type) {
+        defer { handlersLock.unlock() }
         handlersLock.lock()
         guard let index = handlers.firstIndex(where: {type(of: $0) == handlerClass}) else {
-            handlersLock.unlock()
             return
         }
         handlers.remove(at: index)
-        handlersLock.unlock()
     }
 }

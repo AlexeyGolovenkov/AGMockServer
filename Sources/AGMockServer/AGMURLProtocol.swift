@@ -8,7 +8,6 @@
 import Foundation
 
 final class AGMURLProtocol: URLProtocol {
-    var handler: AGMRequestHandler!
     static var predefinedResponses = AGMPredefinedResponsesStorage()
     static var interceptorStorage = AGMInterceptorStorage()
     
@@ -20,9 +19,6 @@ final class AGMURLProtocol: URLProtocol {
     override class func canInit(with task: URLSessionTask) -> Bool {
         guard let url = task.originalRequest?.url else { return false }
         let result = AGMRequestHandlersFactory.main.handler(for: url) != nil || Self.predefinedResponses.response(for: url) != nil
-        if result {
-            AGMRequestLog.main.add(url)
-        }
         return result
     }
     
@@ -31,6 +27,8 @@ final class AGMURLProtocol: URLProtocol {
             client?.urlProtocolDidFinishLoading(self)
             return
         }
+        
+        AGMRequestLog.main.add(url)
         
         if let response = Self.predefinedResponses.response(for: url) {
             DispatchQueue.global(qos: .background).async {
@@ -43,9 +41,12 @@ final class AGMURLProtocol: URLProtocol {
             return
         }
         
-        handler = AGMRequestHandlersFactory.main.handler(for: url)
+        guard let handler = AGMRequestHandlersFactory.main.handler(for: url) else {
+            client?.urlProtocolDidFinishLoading(self)
+            return
+        }
         DispatchQueue.global(qos: .background).async {
-            let answer = self.handler.response(for: url, from: nil)
+            let answer = handler.response(for: url, from: nil)
             let handledAnswer = self.applyInterceptors(to: answer.response, with: answer.data)
             AGMResponseLog.main.add(handledAnswer)
             self.send(handledAnswer.response, data: handledAnswer.data ?? Data())
