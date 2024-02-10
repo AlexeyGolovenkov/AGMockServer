@@ -50,12 +50,21 @@ open class AGMockServer {
     /// This property is useful to find unit tests that use real network instead of mocked data.
     public var isNetworkBlocked: Bool = false
     
+    /// if true, MockServer stores detailed information for every request and it's resonse, including response data
+    ///
+    /// Detailed log may take a lot of memory resources. So sometimes it's useful to block collecting this data if it is not important for current tasks
+    public var isCollectedDetailedData = true
+    
     public var requests: [URL] {
         AGMRequestLog.main.log()
     }
     
     public var responses: [(response: URLResponse, data: Data?)] {
         AGMResponseLog.main.log()
+    }
+    
+    public var detailedLog: [AGMDetailedLogItem] {
+        AGMDetailedLog.main.log()        
     }
     
     private var session: URLSession?
@@ -161,9 +170,14 @@ open class AGMockServer {
         AGMResponseLog.main.clear()
     }
     
+    public func clearDetailedLog() {
+        AGMDetailedLog.main.clear()
+    }
+    
     /// Clears all available logs
     public func clearLogs() {
         clearRequestLog()
         clearResponseLog()
+        clearDetailedLog()
     }
 }

@@ -49,6 +49,8 @@ final class AGMURLProtocol: URLProtocol {
             let answer = handler.response(for: url, from: nil)
             let handledAnswer = self.applyInterceptors(to: answer.response, with: answer.data)
             AGMResponseLog.main.add(handledAnswer)
+            let logItem = AGMDetailedLogItem(request: self.request, response: handledAnswer.response as? HTTPURLResponse, responseData: handledAnswer.data)
+            AGMDetailedLog.main.add(logItem)
             self.send(handledAnswer.response, data: handledAnswer.data ?? Data())
         }
     }
