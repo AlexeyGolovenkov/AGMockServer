@@ -330,6 +330,25 @@ final class AGMockServerTests: XCTestCase {
         XCTAssertTrue(server.requests.count == 0, "Wrong number of requests in server log: \(server.requests)")
         XCTAssertTrue(server.responses.count == 0, "Wrong number of requests in server log: \(server.responses)")
     }
+    
+    func testExecuteBlock() async throws {
+        server.registerHandler(EchoHandler())
+        XCTAssertTrue(AGMRequestHandlersFactory.main.handlers.count == 1)
+        let echoHandler = ErrorHandler()
+        
+        try await TimeoutTask(1_000_000_000) {
+            try await server.execute(withHandlers: [echoHandler]) {
+                XCTAssertTrue(AGMRequestHandlersFactory.main.handlers.count == 2)
+                let echoData = try await session.data(from: Constants.echoURL)
+                let echoResponseBody = try JSONDecoder().decode([String: String].self, from: echoData.0)
+                XCTAssertTrue(echoResponseBody == ["param1": "value1", "param2": "value2"], "Wrong response: \(echoResponseBody)")
+                let errorData = try await session.data(from: Constants.errorURL)
+                let errorResponseBody = try JSONDecoder().decode([String: String].self, from: errorData.0)
+                XCTAssertTrue(errorResponseBody == ["error": "Error"], "Wrong response: \(errorResponseBody)")
+            }
+        }.value
+        XCTAssertTrue(AGMRequestHandlersFactory.main.handlers.count == 1)
+    }
 }
 
 private extension AGMockServerTests {
@@ -337,5 +356,6 @@ private extension AGMockServerTests {
     enum Constants {
         static let externalURL = "https://example.com"
         static let echoURL = URL(string: "https://localhost/echo?param1=value1&param2=value2")!
+        static let errorURL = URL(string: "https://localhost/error")!
     }
 }
