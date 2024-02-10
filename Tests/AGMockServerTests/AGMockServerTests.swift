@@ -377,6 +377,26 @@ final class AGMockServerTests: XCTestCase {
         
         XCTAssertTrue(firstItem.response?.statusCode == 200, "Wrong status code: \(String(describing: firstItem.response?.statusCode))")
     }
+    
+    func testIsCollectedDetailedData() async throws {
+        defer {
+            server.isCollectingDetailedData = true
+        }
+        
+        server.registerHandler(EchoHandler())
+        server.isCollectingDetailedData = false
+        try await TimeoutTask(1_000_000_000) {
+            let _ = try await session.data(from: Constants.echoURL)
+        }.value
+     
+        XCTAssertTrue(server.detailedLog.isEmpty, "Detailed log must be empty")
+        
+        server.isCollectingDetailedData = true
+        try await TimeoutTask(1_000_000_000) {
+            let _ = try await session.data(from: Constants.echoURL)
+        }.value
+        XCTAssertTrue(server.detailedLog.count == 1, "Wrong number of items in detailed log: \(server.detailedLog.count) instead of 1")
+    }
 }
 
 private extension AGMockServerTests {

@@ -53,7 +53,7 @@ open class AGMockServer {
     /// if true, MockServer stores detailed information for every request and it's resonse, including response data
     ///
     /// Detailed log may take a lot of memory resources. So sometimes it's useful to block collecting this data if it is not important for current tasks
-    public var isCollectedDetailedData = true
+    public var isCollectingDetailedData = true
     
     public var requests: [URL] {
         AGMRequestLog.main.log()
