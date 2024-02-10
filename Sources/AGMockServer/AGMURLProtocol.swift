@@ -48,9 +48,7 @@ final class AGMURLProtocol: URLProtocol {
         DispatchQueue.global(qos: .background).async {
             let answer = handler.response(for: url, from: nil)
             let handledAnswer = self.applyInterceptors(to: answer.response, with: answer.data)
-            AGMResponseLog.main.add(handledAnswer)
-            let logItem = AGMDetailedLogItem(request: self.request, response: handledAnswer.response as? HTTPURLResponse, responseData: handledAnswer.data)
-            AGMDetailedLog.main.add(logItem)
+            self.log(answer: handledAnswer)
             self.send(handledAnswer.response, data: handledAnswer.data ?? Data())
         }
     }
@@ -76,5 +74,13 @@ final class AGMURLProtocol: URLProtocol {
             responseWithData = interceptor.response(for: responseWithData.response, from: responseWithData.data)
         }
         return responseWithData
+    }
+    
+    private func log(answer: (response: URLResponse, data: Data?)) {
+        AGMResponseLog.main.add(answer)
+        if AGMockServer.shared.isCollectingDetailedData {
+            let logItem = AGMDetailedLogItem(request: self.request, response: answer.response as? HTTPURLResponse, responseData: answer.data)
+            AGMDetailedLog.main.add(logItem)
+        }
     }
 }
