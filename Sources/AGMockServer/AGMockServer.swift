@@ -125,10 +125,22 @@ open class AGMockServer {
     ///   - format: Format of URL to be handled with provided file. Supports regex.
     ///   - fileName: Name of file with answer
     ///   - bundle: Bundle that contains the file
-    public func registerResponse(for format: String, with fileName: String, in bundle: Bundle = .main) {
+    @discardableResult
+    public func registerResponse(for format: String, with fileName: String, in bundle: Bundle = .main) -> some AGMRequestHandler {
         let splittedName = fileName.splitFileName()
         let handler = AGMResourceBasedHandler(for: format, with: splittedName.fileName, ext: splittedName.fileNameExtention, in: bundle)
         registerHandler(handler)
+        return handler
+    }
+    
+    /// Executes closure with provided handlers and unregisters these handlers
+    /// - Parameters:
+    ///   - handlers: Handlers to be used with closure
+    ///   - block: Closure to be executed
+    public func execute(withHandlers handlers: [AGMRequestHandler], block: () async throws -> ()) async throws {
+        handlers.forEach { registerHandler($0) }
+        try await block()
+        handlers.forEach { unregisterHandler($0) }
     }
     
     public func addInterceptor(_ interceptor: AGMInterceptor) {
@@ -139,14 +151,17 @@ open class AGMockServer {
         AGMURLProtocol.interceptorStorage.clear()
     }
     
+    /// Removes all data from the list of requested urls
     public func clearRequestLog() {
         AGMRequestLog.main.clear()
     }
     
+    /// Removes all data from the list of sent responses
     public func clearResponseLog() {
         AGMResponseLog.main.clear()
     }
     
+    /// Clears all available logs
     public func clearLogs() {
         clearRequestLog()
         clearResponseLog()
