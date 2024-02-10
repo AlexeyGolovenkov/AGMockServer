@@ -349,6 +349,34 @@ final class AGMockServerTests: XCTestCase {
         }.value
         XCTAssertTrue(AGMRequestHandlersFactory.main.handlers.count == 1)
     }
+    
+    func testDetailedLog() async throws {
+        server.registerHandler(EchoHandler())
+        try await TimeoutTask(1_000_000_000) {
+            let _ = try await session.data(from: Constants.echoURL)
+        }.value
+        
+        let log = server.detailedLog
+        XCTAssertTrue(log.count == 1, "Wrong number of items in detailed log: \(log.count) instead of 1")
+        guard let firstItem = log.first else {
+            XCTFail("No items in detailed log")
+            return
+        }
+        
+        XCTAssertTrue(firstItem.request.url?.absoluteString.contains("echo") == true)
+        XCTAssertEqual(firstItem.request.httpMethod, "GET")
+        
+        server.clearLogs()
+        XCTAssertTrue(server.detailedLog.isEmpty, "Detailed log not cleared")
+        guard let data = firstItem.responseData else {
+            XCTFail("No data in response")
+            return
+        }
+        let echoResponseBody = try JSONDecoder().decode([String: String].self, from: data)
+        XCTAssertTrue(echoResponseBody == ["param1": "value1", "param2": "value2"], "Wrong response: \(echoResponseBody)")
+        
+        XCTAssertTrue(firstItem.response?.statusCode == 200, "Wrong status code: \(String(describing: firstItem.response?.statusCode))")
+    }
 }
 
 private extension AGMockServerTests {
