@@ -8,9 +8,9 @@
 import Foundation
 
 public struct AGMDetailedLogItem {
-    let request: URLRequest
-    let response: HTTPURLResponse?
-    let responseData: Data?
+    public let request: URLRequest
+    public let response: HTTPURLResponse?
+    public let responseData: Data?
 }
 
 public class AGMDetailedLog: AGMStorage {
